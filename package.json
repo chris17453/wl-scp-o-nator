@@ -1,0 +1,40 @@
+{
+  "name": "wl-scp-o-nator",
+  "displayName": "Scp-O-nator",
+  "description": "Watkins Labs SCP-o-nator",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:extension.upload",
+    "onCommand:extension.download",
+    "onCommand:extension.sync"
+],
+"main": "./src/extension.js",
+"contributes": {
+    "commands": [
+        {
+            "command": "extension.upload",
+            "title": "Upload Files"
+        },
+        {
+            "command": "extension.download",
+            "title": "Download Files"
+        },
+        {
+            "command": "extension.sync",
+            "title": "Sync Files"
+        }
+    ]
+},
+"devDependencies": {
+  "vscode": "^1.60.0"
+},
+"dependencies": {
+    "scp2": "^0.5.0"
+}
+}
