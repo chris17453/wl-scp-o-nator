@@ -1,0 +1,9 @@
+{
+    "host": "10.90.0.45",
+    "username": "root",
+    "remoteDirectory": "/web/test/",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ]
+  }

@@ -1,40 +1,126 @@
 {
   "name": "wl-scp-o-nator",
-  "displayName": "Scp-O-nator",
+  "displayName": "SCP-O-Nator",
   "description": "Watkins Labs SCP-o-nator",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.91.0"
+    "vscode": "^1.7.0"
   },
+  "author": {
+    "name": "Chris Watkins",
+    "email": "chris@watkinslabs.com",
+    "url": "https://watkinslabs.com"
+  },
+  "icon": "assets/icon.png",
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.upload",
-    "onCommand:extension.download",
-    "onCommand:extension.sync"
-],
-"main": "./src/extension.js",
-"contributes": {
+    "onCommand:scponator.upload",
+    "onCommand:scponator.download",
+    "onCommand:scponator.sync"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris17453/wl-scp-o-nator"
+  },
+  "main": "./src/scponator.js",
+  "contributes": {
     "commands": [
+      {
+        "command": "scponator.upload",
+        "title": "Upload "
+      },
+      {
+        "command": "scponator.download",
+        "title": "Download"
+      },
+      {
+        "command": "scponator.sync",
+        "title": "Sync"
+      },
+      {
+        "command": "scponator.uploadProject",
+        "title": "Upload Project"
+      },
+      {
+        "command": "scponator.downloadProject",
+        "title": "Download Project"
+      },
+      {
+        "command": "scponator.syncProject",
+        "title": "Sync Project"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "scponator.upload",
+        "key": "ctrl+u",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "scponator.download",
+        "key": "ctrl+d",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
         {
-            "command": "extension.upload",
-            "title": "Upload Files"
+          "submenu": "scponator.singleSubmenu",
+          "group": "navigation@2"
         },
         {
-            "command": "extension.download",
-            "title": "Download Files"
-        },
-        {
-            "command": "extension.sync",
-            "title": "Sync Files"
+          "submenu": "scponator.projectSubMenu",
+          "group": "navigation@3"
         }
+      ],
+      "scponator.singleSubmenu": [
+        {
+          "command": "scponator.upload",
+          "group": "navigation"
+        },
+        {
+          "command": "scponator.download",
+          "group": "navigation"
+        },
+        {
+          "command": "scponator.sync",
+          "group": "navigation"
+        }
+      ],
+      "scponator.projectSubMenu": [
+        {
+          "command": "scponator.uploadProject",
+          "group": "navigation"
+        },
+        {
+          "command": "scponator.downloadProject",
+          "group": "navigation"
+        },
+        {
+          "command": "scponator.syncProject",
+          "group": "navigation"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "scponator.singleSubmenu",
+        "label": "SCP-O-NATOR Single"
+      },
+      {
+        "id": "scponator.projectSubMenu",
+        "label": "SCP-O-NATOR Project"
+      }
     ]
-},
-"devDependencies": {
-  "vscode": "^1.60.0"
-},
-"dependencies": {
-    "scp2": "^0.5.0"
-}
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.0",
+    "micromatch": "^4.0.7"
+  },
+  "dependencies": {
+    "@types/node": "^14.0.0",
+    "micromatch": "^4.0.7"
+  }
 }
