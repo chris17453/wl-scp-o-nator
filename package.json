@@ -68,39 +68,31 @@
       "explorer/context": [
         {
           "submenu": "scponator.singleSubmenu",
-          "group": "navigation@2"
+          "group": "scponator@1"
         },
         {
           "submenu": "scponator.projectSubMenu",
-          "group": "navigation@3"
+          "group": "scponator@2"
         }
       ],
       "scponator.singleSubmenu": [
         {
           "command": "scponator.upload",
-          "group": "navigation"
+          "group": "wlscponator"
         },
         {
           "command": "scponator.download",
-          "group": "navigation"
-        },
-        {
-          "command": "scponator.sync",
-          "group": "navigation"
+          "group": "wlscponator"
         }
       ],
       "scponator.projectSubMenu": [
         {
           "command": "scponator.uploadProject",
-          "group": "navigation"
+          "group": "wlscponator"
         },
         {
           "command": "scponator.downloadProject",
-          "group": "navigation"
-        },
-        {
-          "command": "scponator.syncProject",
-          "group": "navigation"
+          "group": "wlscponator"
         }
       ]
     },

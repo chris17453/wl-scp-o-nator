@@ -2,6 +2,8 @@
 
 **WL-SCP-O-NATOR** is a Visual Studio Code extension that allows you to upload, download, and synchronize files between your local machine and a remote server using SCP and RSYNC. This extension simplifies the process of managing files on remote servers directly from your code editor.
 
+![Demo of SCP-O-Nator in action](./assets/demo.gif)
+
 ## Features
 
 - **Upload Files**: Upload the currently open file in the editor to a remote server.

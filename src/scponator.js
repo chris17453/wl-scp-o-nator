@@ -15,16 +15,12 @@ function activate(context) {
         startNewSession();
         handleFileTransfer('upload', uri, endSession);
     });
-u
+
     let downloadCommand = vscode.commands.registerCommand('scponator.download', function (uri) {
         startNewSession();
         handleFileTransfer('download', uri, endSession);
     });
 
-    let syncCommand = vscode.commands.registerCommand('scponator.sync', function (uri) {
-        startNewSession();
-        handleFileTransfer('sync', uri, endSession);
-    });
 
     let uploadProjectCommand = vscode.commands.registerCommand('scponator.uploadProject', function () {
         vscode.window.showInformationMessage('Do you want to upload the entire project?', 'Yes', 'No').then(answer => {
@@ -44,21 +40,12 @@ u
         });
     });
 
-    let syncProjectCommand = vscode.commands.registerCommand('scponator.syncProject', function () {
-        vscode.window.showInformationMessage('Do you want to sync the entire project?', 'Yes', 'No').then(answer => {
-            if (answer === 'Yes') {
-                startNewSession();
-                handleProjectTransfer('sync', endSession);
-            }
-        });
-    });
+
 
     context.subscriptions.push(uploadCommand);
     context.subscriptions.push(downloadCommand);
-    context.subscriptions.push(syncCommand);
     context.subscriptions.push(uploadProjectCommand);
     context.subscriptions.push(downloadProjectCommand);
-    context.subscriptions.push(syncProjectCommand);
 
     outputChannel.appendLine('Extension activated successfully.');
 }
@@ -71,7 +58,9 @@ function startNewSession() {
     outputChannel.clear();
     outputChannel.show(true);
     outputChannel.appendLine(`Transfer Session ${sessionNumber} started at: ${sessionStartTime.toLocaleString()}`);
-}let pendingTransfers = 0;
+}
+
+let pendingTransfers = 0;
 
 function endSession() {
     outputChannel.appendLine(`Transfer Session ${sessionNumber} ended at: ${new Date().toLocaleString()}`);
@@ -87,9 +76,7 @@ function endSession() {
 function handleFileTransfer(action, uri, callback) {
     outputChannel.appendLine(`Handling file transfer for action: ${action}`);
     if (!uri) {
-        vscode.window.showInformationMessage('No file selected!');
-        callback();
-        return;
+        uri = getActiveFileUri();
     }
 
     try {
@@ -102,9 +89,7 @@ function handleFileTransfer(action, uri, callback) {
             uploadFile(config, localPath, remotePath, userHost);
         } else if (action === 'download') {
             downloadFile(config, localPath, remotePath, userHost);
-        } else if (action === 'sync') {
-            syncFile(config, localPath, remotePath, userHost);
-        }
+        } 
     } catch (error) {
         vscode.window.showErrorMessage(`Configuration error: ${error.message}`);
         outputChannel.appendLine(`Configuration error: ${error.message}`);
@@ -136,8 +121,6 @@ async function handleProjectTransfer(action) {
                 await uploadFile(config, localPath, remoteFilePath, userHost);
             } else if (action === 'download') {
                 await downloadFile(config, localPath, remoteFilePath, userHost);
-            } else if (action === 'sync') {
-                await syncFile(config, localPath, remoteFilePath, userHost);
             }
         }, ignorePatterns);
 
@@ -170,8 +153,6 @@ async function traverseDirectory(dir, callback, ignorePatterns) {
         }
     }
 }
-
-
 
 function shouldIgnore(filePath, patterns) {
     return patterns.some(pattern => {
@@ -285,8 +266,6 @@ function uploadFileWithRetry(config, localPath, remotePath, userHost, retryCount
     executeScpCommand(retryCount);
 }
 
-
-
 function createRemoteDirectory(config, remoteDir, callback, retryCount = 3, delay = 2000) {
     const mkdirCommand = buildMkdirCommand(config, remoteDir);
 
@@ -309,8 +288,6 @@ function createRemoteDirectory(config, remoteDir, callback, retryCount = 3, dela
 
     executeMkdirCommand(retryCount);
 }
-
-
 
 function downloadFile(config, localPath, remotePath, userHost, callback=null, retryCount = 3) {
     const scpCommand = buildScpCommand(config, remotePath, userHost, localPath, 'download');
@@ -342,69 +319,13 @@ function downloadFile(config, localPath, remotePath, userHost, callback=null, re
     executeCommand(retryCount);
 }
 
-function syncFile(config, localPath, remotePath, userHost, callback=null) {
-    let localMTime = 0;
-    if (fs.existsSync(localPath)) {
-        const localStat = fs.statSync(localPath);
-        localMTime = new Date(localStat.mtime).getTime();
+function getActiveFileUri() {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+        return editor.document.uri;
     }
-
-    const remoteCommand = `ssh ${userHost} "stat -c %Y ${remotePath}"`;
-    exec(remoteCommand, (err, stdout, stderr) => {
-        if (err) {
-            if (stderr.includes('No such file or directory')) {
-                uploadFile(config, localPath, remotePath, userHost, () => {
-                    updateLocalMTime(localPath, remotePath, userHost, () => {
-                        outputChannel.appendLine(`File synchronized (uploaded): ${localPath}`);
-                        outputChannel.appendLine(`Source: ${localPath}`);
-                        outputChannel.appendLine(`Destination: ${remotePath}`);
-                        if (callback) callback();
-                    });
-                });
-            } else {
-                vscode.window.showErrorMessage(`Error: ${stderr}`);
-                outputChannel.appendLine(`Remote stat error: ${stderr}`);
-                if (callback) callback();
-            }
-            return;
-        }
-
-        const remoteMTime = parseInt(stdout.trim()) * 1000;
-        if (localMTime > remoteMTime) {
-            uploadFile(config, localPath, remotePath, userHost, () => {
-                updateLocalMTime(localPath, remotePath, userHost, () => {
-                    outputChannel.appendLine(`${localPath} --> ${remotePath}`);
-                    if (callback) callback();
-                });
-            });
-        } else if (remoteMTime > localMTime) {
-            downloadFile(config, localPath, remotePath, userHost, () => {
-                updateLocalMTime(localPath, remotePath, userHost, () => {
-                    outputChannel.appendLine(`${remotePath} <-- ${localPath}`);
-                    if (callback) callback();
-                });
-            });
-        } else {
-            vscode.window.showInformationMessage(`Files are already synchronized: ${localPath}`);
-            outputChannel.appendLine(`Files are already synchronized: ${localPath}`);
-            if (callback) callback();
-        }
-    });
-}
-
-function updateLocalMTime(localPath, remotePath, userHost, callback) {
-    const remoteCommand = `ssh ${userHost} "stat -c %Y ${remotePath}"`;
-    exec(remoteCommand, (err, stdout, stderr) => {
-        if (err) {
-            vscode.window.showErrorMessage(`Error: ${stderr}`);
-            outputChannel.appendLine(`Remote stat error: ${stderr}`);
-            return;
-        }
-
-        const remoteMTime = parseInt(stdout.trim()) * 1000;
-        fs.utimesSync(localPath, new Date(), new Date(remoteMTime));
-        if (callback) callback();
-    });
+    vscode.window.showInformationMessage('No file is currently open!');
+    return null;
 }
 
 exports.activate = activate;
