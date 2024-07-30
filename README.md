@@ -1,6 +1,6 @@
 # Watkins Labs SCP-O-NATOR
 
-**WL-SCP-O-NATOR** is a Visual Studio Code extension that allows you to upload, download, and synchronize files between your local machine and a remote server using SCP and RSYNC. This extension simplifies the process of managing files on remote servers directly from your code editor.
+**WL-SCP-O-NATOR** is a Visual Studio Code extension that allows you to upload and download files between your local machine and a remote server using SCP. This extension simplifies the process of managing files on remote servers directly from your code editor.
 
 ![Demo of SCP-O-Nator in action](./assets/demo.gif)
 
@@ -8,7 +8,7 @@
 
 - **Upload Files**: Upload the currently open file in the editor to a remote server.
 - **Download Files**: Download the corresponding remote file to your local directory.
-- **Sync Files**: Synchronize files between your local and remote directories, ensuring that only newer files are transferred.
+- **Project Operations**: Upload or download the entire project, with support for ignore patterns.
 
 ## Keybindings
 
@@ -32,7 +32,8 @@ Create a file named `.scpconfig.json` and add the following content:
   "host": "your-host",
   "remoteDirectory": "/path/to/remote/directory",
   "password": "your-password", // Optional, use this or privateKey
-  "privateKey": "/path/to/private/key" // Optional, use this or password
+  "privateKey": "/path/to/private/key", // Optional, use this or password
+  "ignore": ["node_modules", "*.log"] // Optional, specify patterns to ignore
 }
 ```
 
@@ -43,6 +44,7 @@ Create a file named `.scpconfig.json` and add the following content:
 - `remoteDirectory`: The remote directory where files will be uploaded to or downloaded from.
 - `password`: Your SSH password (optional, use this or `privateKey`).
 - `privateKey`: Path to your SSH private key file (optional, use this or `password`).
+- `ignore`: Array of patterns to ignore during upload or download (optional).
 
 ### Example Configuration
 
@@ -53,7 +55,8 @@ Create a file named `.scpconfig.json` and add the following content:
   "username": "john_doe",
   "host": "example.com",
   "remoteDirectory": "/home/john_doe/projects",
-  "privateKey": "/home/john_doe/.ssh/id_rsa"
+  "privateKey": "/home/john_doe/.ssh/id_rsa",
+  "ignore": ["node_modules", "*.log"]
 }
 ```
 
@@ -64,7 +67,8 @@ Create a file named `.scpconfig.json` and add the following content:
   "username": "john_doe",
   "host": "example.com",
   "remoteDirectory": "/home/john_doe/projects",
-  "password": "supersecretpassword"
+  "password": "supersecretpassword",
+  "ignore": ["node_modules", "*.log"]
 }
 ```
 
@@ -78,9 +82,15 @@ To upload the currently open file in the editor to the remote server, press `Ctr
 
 To download the corresponding remote file to your local directory, press `Ctrl+D`. This will execute the download command and retrieve the file from the specified remote directory.
 
-### Synchronizing Files
+### Project Operations
 
-To synchronize files between your local and remote directories, press `Ctrl+S`. This will use RSYNC to ensure that only newer files are transferred in both directions.
+#### Upload Project
+
+To upload the entire project, including all files in the workspace, execute the relevant command from the context menu or command palette. Files specified in the `ignore` patterns will be excluded from the upload.
+
+#### Download Project
+
+To download the project, the extension will only download files that already exist locally and match the remote versions. It will not create new files locally if they don't already exist. This ensures that only updates to existing local files are retrieved, respecting the `ignore` patterns.
 
 ## Troubleshooting
 
@@ -90,10 +100,12 @@ To synchronize files between your local and remote directories, press `Ctrl+S`. 
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue on the [GitHub repository](https://github.com/chris17453/wl-scp-o-nator).
-
 Contributions are welcome! If you encounter any issues or have feature requests, please open an issue or submit a pull request on the [GitHub repository](https://github.com/chris17453/wl-scp-o-nator).
 
 ## License
 
 This project is licensed under the BSD 3 License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+Does this update accurately reflect the intended functionality?
