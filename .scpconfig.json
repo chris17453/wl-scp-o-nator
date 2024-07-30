@@ -2,6 +2,9 @@
     "host": "10.90.0.45",
     "username": "root",
     "remoteDirectory": "/web/test/",
+    "usePuttyTools": false,
+    "puttyPath": "",
+    "privateKey": "/home/nd/.ssh/nd.key",
     "ignore": [
       "node_modules",
       ".git"

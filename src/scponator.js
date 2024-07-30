@@ -197,31 +197,81 @@ function getRemotePath(config, uri) {
     return path.join(config.remoteDirectory, relativePath).replace(/\\/g, '/');
 }
 
-function buildMkdirCommand(config, remoteDir) {
-    let authOptions = '';
-    if (config.privateKey) {
-        authOptions =` -i ${config.privateKey}`;
-    } else if (config.password) {
-        authOptions = `sshpass -p ${config.password}`;
-    }
-    return `${authOptions} ssh ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
-}
+function createRemoteDirectory(config, remoteDir, callback, retryCount = 3, delay = 2000) {
+    const mkdirCommand = buildMkdirCommand(config, remoteDir);
 
+    const executeMkdirCommand = (retriesLeft) => {
+        exec(mkdirCommand, (err, stdout, stderr) => {
+            if (err) {
+                if (retriesLeft > 0) {
+                    setTimeout(() => executeMkdirCommand(retriesLeft - 1), delay);
+                } else {
+                    outputChannel.appendLine(`Final error creating remote directory ${remoteDir}: ${stderr}`);
+                    outputChannel.appendLine(`Command used: ${mkdirCommand}`);
+                    errorFiles.push({ path: remoteDir, error: stderr, command: mkdirCommand });
+                    if (callback) callback(err);
+                }
+            } else {
+                callback(null);
+            }
+        });
+    };
+
+    executeMkdirCommand(retryCount);
+}
 function buildScpCommand(config, source, userHost, destination, action) {
     let authOptions = '';
-    if (config.privateKey) {
-        authOptions = `-i ${config.privateKey}`;
-    } else if (config.password) {
-        authOptions = `sshpass -p ${config.password}`;
-    }
-    if (action === 'upload') {
-        return `${authOptions} scp -r ${source} ${userHost}:${destination}`;
-    } else if (action === 'download') {
-        return `${authOptions} scp -r ${userHost}:${source} ${destination}`;
+
+    // Determine if using PuTTY tools (Windows) or OpenSSH tools (Linux/macOS)
+    if (config.usePuttyTools) {
+        // For PuTTY tools, use the .ppk private key and specify the puttyPath
+        if (config.privateKey) {
+            authOptions = `-i "${config.privateKey}"`;
+        }
+        // PSCP command format for upload/download
+        if (action === 'upload') {
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} "${source}" ${userHost}:${destination}`;
+        } else if (action === 'download') {
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${userHost}:${source} "${destination}"`;
+        }
+    } else {
+        // For OpenSSH tools, use the standard private key usage
+        if (config.privateKey) {
+            authOptions = `-i ${config.privateKey}`;
+        }
+        // SCP command format for upload/download
+        if (action === 'upload') {
+            return `scp ${authOptions} -r "${source}" ${userHost}:${destination}`;
+        } else if (action === 'download') {
+            return `scp ${authOptions} -r ${userHost}:${source} "${destination}"`;
+        }
     }
 }
 
-async function uploadFile(config, localPath, remotePath, userHost,  retryCount = 3, delay = 2000) {
+
+function buildMkdirCommand(config, remoteDir) {
+    let authOptions = '';
+
+    // Determine if using PuTTY tools (Windows) or OpenSSH tools (Linux/macOS)
+    if (config.usePuttyTools) {
+        // For PuTTY tools, use the .ppk private key and specify the puttyPath
+        if (config.privateKey) {
+            authOptions = `-i "${config.privateKey}"`;
+        }
+        // Plink command for directory creation
+        return `"${config.puttyPath}\\plink.exe" ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
+    } else {
+        // For OpenSSH tools, standard private key usage
+        if (config.privateKey) {
+            authOptions = `-i ${config.privateKey}`;
+        }
+        // SSH command for directory creation
+        return `ssh  ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
+    }
+}
+
+
+async function uploadFile(config, localPath, remotePath, userHost, retryCount = 3, delay = 2000) {
     const baseDir = config.remoteDirectory;
     const remoteDir = path.dirname(remotePath);
 
@@ -237,7 +287,6 @@ async function uploadFile(config, localPath, remotePath, userHost,  retryCount =
         uploadFileWithRetry(config, localPath, remotePath, userHost, retryCount, delay);
     }
 }
-
 
 function uploadFileWithRetry(config, localPath, remotePath, userHost, retryCount = 3, delay = 2000) {
     const scpCommand = buildScpCommand(config, localPath, userHost, remotePath, 'upload');
@@ -266,30 +315,7 @@ function uploadFileWithRetry(config, localPath, remotePath, userHost, retryCount
     executeScpCommand(retryCount);
 }
 
-function createRemoteDirectory(config, remoteDir, callback, retryCount = 3, delay = 2000) {
-    const mkdirCommand = buildMkdirCommand(config, remoteDir);
-
-    const executeMkdirCommand = (retriesLeft) => {
-        exec(mkdirCommand, (err, stdout, stderr) => {
-            if (err) {
-                if (retriesLeft > 0) {
-                    setTimeout(() => executeMkdirCommand(retriesLeft - 1), delay);
-                } else {
-                    outputChannel.appendLine(`Final error creating remote directory ${remoteDir}: ${stderr}`);
-                    outputChannel.appendLine(`Command used: ${mkdirCommand}`);
-                    errorFiles.push({ path: remoteDir, error: stderr, command: mkdirCommand });
-                    if (callback) callback(err);
-                }
-            } else {
-                callback(null);
-            }
-        });
-    };
-
-    executeMkdirCommand(retryCount);
-}
-
-function downloadFile(config, localPath, remotePath, userHost, callback=null, retryCount = 3) {
+function downloadFile(config, localPath, remotePath, userHost, callback = null, retryCount = 3) {
     const scpCommand = buildScpCommand(config, remotePath, userHost, localPath, 'download');
 
     const executeCommand = (retriesLeft) => {

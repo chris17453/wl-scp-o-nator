@@ -3,4 +3,3 @@ dist/**
 .vscode/**
 **/*.map
 **/*.ts
-README.md

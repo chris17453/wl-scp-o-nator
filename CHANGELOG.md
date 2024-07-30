@@ -1,9 +1,14 @@
 # Change Log
 
-All notable changes to the "wl-uploader" extension will be documented in this file.
+## [Version 0.0.3]
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+- Readme Support updated.
 
-## [Unreleased]
+## [Version 0.0.2]
+
+- Support for windows using plink and putty ppk private keys
+
+## [Version 0.0.1]
 
 - Initial release
+- support for scp with linux private key

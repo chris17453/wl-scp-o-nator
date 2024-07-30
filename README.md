@@ -31,72 +31,73 @@ Create a file named `.scpconfig.json` and add the following content:
   "username": "your-username",
   "host": "your-host",
   "remoteDirectory": "/path/to/remote/directory",
-  "password": "your-password", // Optional, use this or privateKey
-  "privateKey": "/path/to/private/key", // Optional, use this or password
-  "ignore": ["node_modules", "*.log"] // Optional, specify patterns to ignore
+  "usePuttyTools": true, // Only for Windows users
+  "puttyPath": "C:\\path\\to\\putty\\directory", // Only for Windows users
+  "privateKey": "C:\\path\\to\\private\\key" // Path to your private key file (either OpenSSH or PuTTY format)
 }
 ```
 
-### Configuration Fields
+### Setting Up SSH Public Key Authentication
 
-- `username`: Your SSH username.
-- `host`: The remote host to connect to.
-- `remoteDirectory`: The remote directory where files will be uploaded to or downloaded from.
-- `password`: Your SSH password (optional, use this or `privateKey`).
-- `privateKey`: Path to your SSH private key file (optional, use this or `password`).
-- `ignore`: Array of patterns to ignore during upload or download (optional).
+To securely access your remote server without entering a password, set up SSH public key authentication. This extension supports both OpenSSH and PuTTY key formats.
 
-### Example Configuration
+#### For Linux and macOS Users (OpenSSH Keys)
 
-#### Using Private Key
+1. **Generate an SSH Key Pair**:
 
-```json
-{
-  "username": "john_doe",
-  "host": "example.com",
-  "remoteDirectory": "/home/john_doe/projects",
-  "privateKey": "/home/john_doe/.ssh/id_rsa",
-  "ignore": ["node_modules", "*.log"]
-}
-```
+   Open a terminal and run:
 
-#### Using Password
+   ```sh
+   ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+   ```
 
-```json
-{
-  "username": "john_doe",
-  "host": "example.com",
-  "remoteDirectory": "/home/john_doe/projects",
-  "password": "supersecretpassword",
-  "ignore": ["node_modules", "*.log"]
-}
-```
+   Follow the prompts to save the key pair, optionally adding a passphrase for security.
 
-## Usage
+2. **Copy the Public Key to the Remote Server**:
 
-### Uploading Files
+   ```sh
+   ssh-copy-id username@host
+   ```
+
+   This command adds your public key to the `~/.ssh/authorized_keys` file on the remote server.
+
+#### For Windows Users (PuTTY Keys)
+
+1. **Generate an SSH Key Pair with PuTTYgen**:
+
+   - Open PuTTYgen.
+   - Select "Generate" and move the mouse to create randomness.
+   - Save the public key and the private key (`.ppk` file). You can also export the key to OpenSSH format if needed.
+
+2. **Copy the Public Key to the Remote Server**:
+
+   - Open the saved public key file, copy its contents, and add it to the `~/.ssh/authorized_keys` file on your remote server. This can be done via an SSH connection or a control panel provided by your hosting provider.
+
+3. **Using PSCP and Plink with PuTTY**:
+
+   - Ensure that the path to your PuTTY tools (`pscp.exe` and `plink.exe`) is correctly set in the `puttyPath` field of your `.scpconfig.json`.
+   - Specify the path to your `.ppk` private key file in the `privateKey` field.
+
+### Usage
+
+#### Uploading Files
 
 To upload the currently open file in the editor to the remote server, press `Ctrl+U`. This will execute the upload command and transfer the file to the specified remote directory.
 
-### Downloading Files
+#### Downloading Files
 
 To download the corresponding remote file to your local directory, press `Ctrl+D`. This will execute the download command and retrieve the file from the specified remote directory.
 
-### Project Operations
+#### Project Operations
 
-#### Upload Project
-
-To upload the entire project, including all files in the workspace, execute the relevant command from the context menu or command palette. Files specified in the `ignore` patterns will be excluded from the upload.
-
-#### Download Project
-
-To download the project, the extension will only download files that already exist locally and match the remote versions. It will not create new files locally if they don't already exist. This ensures that only updates to existing local files are retrieved, respecting the `ignore` patterns.
+- **Upload Project**: Use the extension to upload all files in the workspace, respecting the ignore patterns specified in the configuration.
+- **Download Project**: Downloads updates for files that already exist locally; new files not present locally will not be downloaded.
 
 ## Troubleshooting
 
 - **No active editor found**: Make sure you have a file open in the editor before using the upload or download commands.
 - **Configuration file not found**: Ensure that the `.scpconfig.json` file is in the root of your workspace or the directory where your files are located.
-- **SSH authentication errors**: Verify that your SSH credentials (username, password, private key) are correct and that the SSH server is accessible.
+- **SSH authentication errors**: Verify that your SSH credentials (username, private key) are correct and that the SSH server is accessible.
 
 ## Contributing
 
@@ -105,7 +106,3 @@ Contributions are welcome! If you encounter any issues or have feature requests,
 ## License
 
 This project is licensed under the BSD 3 License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Does this update accurately reflect the intended functionality?

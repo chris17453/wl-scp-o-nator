@@ -1,11 +1,12 @@
 {
   "name": "wl-scp-o-nator",
   "displayName": "SCP-O-Nator",
-  "description": "Watkins Labs SCP-o-nator",
-  "version": "0.0.1",
+  "description": "A simple file transfer for projects to and from servers suporting scp (ssh file transfer).",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.7.0"
   },
+  "publisher": "WatkinsLabs", 
   "author": {
     "name": "Chris Watkins",
     "email": "chris@watkinslabs.com",
