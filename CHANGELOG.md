@@ -1,5 +1,9 @@
 # Change Log
 
+## [Version 0.0.5]
+
+- Fixed Bug: Asysnc error
+
 ## [Version 0.0.4]
 
 - CTRL+SHIFT+S now saves and uploads the file.
