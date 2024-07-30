@@ -1,5 +1,9 @@
 # Change Log
 
+## [Version 0.0.4]
+
+- CTRL+SHIFT+S now saves and uploads the file.
+
 ## [Version 0.0.3]
 
 - Readme Support updated.
@@ -11,4 +15,4 @@
 ## [Version 0.0.1]
 
 - Initial release
-- support for scp with linux private key
+- support for scp with linux private key 

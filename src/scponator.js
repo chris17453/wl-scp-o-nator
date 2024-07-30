@@ -77,8 +77,12 @@ function handleFileTransfer(action, uri, callback) {
     outputChannel.appendLine(`Handling file transfer for action: ${action}`);
     if (!uri) {
         uri = getActiveFileUri();
-    }
+        if (action=='upload'){
+            vscode.workspace.saveAll(false); 
+        }
 
+    }
+ 
     try {
         const config = getConfig(uri);
         const localPath = uri.fsPath;

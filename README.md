@@ -4,6 +4,13 @@
 
 ![Demo of SCP-O-Nator in action](./assets/demo.gif)
 
+## Why?
+We think its better to work from your local machine and push to the remote one.
+
+## Preqs
+- Windows : the putty package with plink
+- Everyone else: Good to go.
+
 ## Features
 
 - **Upload Files**: Upload the currently open file in the editor to a remote server.
@@ -12,7 +19,7 @@
 
 ## Keybindings
 
-- **Upload File**: `Ctrl+U`
+- **Upload File**: `Ctrl+SHIFT+S` (This replaces the SAVE ALL Function in vscode)
 - **Download File**: `Ctrl+D`
 
 ## Installation
@@ -35,7 +42,7 @@ Create a file named `.scpconfig.json` and add the following content:
   "puttyPath": "C:\\path\\to\\putty\\directory", // Only for Windows users
   "privateKey": "C:\\path\\to\\private\\key" // Path to your private key file (either OpenSSH or PuTTY format)
 }
-```
+``` 
 
 ### Setting Up SSH Public Key Authentication
 

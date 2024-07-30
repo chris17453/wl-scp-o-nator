@@ -2,7 +2,7 @@
   "name": "wl-scp-o-nator",
   "displayName": "SCP-O-Nator",
   "description": "A simple file transfer for projects to and from servers suporting scp (ssh file transfer).",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.7.0"
   },
@@ -19,7 +19,8 @@
   "activationEvents": [
     "onCommand:scponator.upload",
     "onCommand:scponator.download",
-    "onCommand:scponator.sync"
+    "onCommand:scponator.uploadProject",
+    "onCommand:scponator.downloadProject"
   ],
   "repository": {
     "type": "git",
@@ -37,26 +38,19 @@
         "title": "Download"
       },
       {
-        "command": "scponator.sync",
-        "title": "Sync"
-      },
-      {
         "command": "scponator.uploadProject",
         "title": "Upload Project"
       },
       {
         "command": "scponator.downloadProject",
         "title": "Download Project"
-      },
-      {
-        "command": "scponator.syncProject",
-        "title": "Sync Project"
       }
+
     ],
     "keybindings": [
       {
         "command": "scponator.upload",
-        "key": "ctrl+u",
+        "key": "ctrl+shift+s",
         "when": "editorTextFocus"
       },
       {
