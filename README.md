@@ -37,9 +37,11 @@ Create a file named `.scpconfig.json` and add the following content:
 {
   "username": "your-username",
   "host": "your-host",
+  "port": 22,
   "remoteDirectory": "/path/to/remote/directory",
   "usePuttyTools": true, // Only for Windows users
   "puttyPath": "C:\\path\\to\\putty\\directory", // Only for Windows users
+  "puttyForceScp": true, // Only for Windows users
   "privateKey": "C:\\path\\to\\private\\key" // Path to your private key file (either OpenSSH or PuTTY format)
 }
 ``` 

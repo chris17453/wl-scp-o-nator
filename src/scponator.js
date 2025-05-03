@@ -225,6 +225,8 @@ function createRemoteDirectory(config, remoteDir, callback, retryCount = 3, dela
 }
 function buildScpCommand(config, source, userHost, destination, action) {
     let authOptions = '';
+    let portOptions = '';
+    let scpOptions = '';
 
     // Determine if using PuTTY tools (Windows) or OpenSSH tools (Linux/macOS)
     if (config.usePuttyTools) {
@@ -232,22 +234,35 @@ function buildScpCommand(config, source, userHost, destination, action) {
         if (config.privateKey) {
             authOptions = `-i "${config.privateKey}"`;
         }
+        // Add port if given (pscp port -P)
+        if (config.port) {
+            portOptions = `-P ${config.port}`;
+        }
+        // Add -scp if forced      
+        if (config.puttyForceScp === true) {
+            scpOptions =`-scp`;
+        }
+
         // PSCP command format for upload/download
         if (action === 'upload') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} "${source}" ${userHost}:${destination}`;
+            return `"${config.puttyPath}\\pscp.exe" ${scpOptions} ${portOptions} ${authOptions} "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${userHost}:${source} "${destination}"`;
+            return `"${config.puttyPath}\\pscp.exe" ${scpOptions} ${portOptions} ${authOptions} ${userHost}:${source} "${destination}"`;
         }
     } else {
         // For OpenSSH tools, use the standard private key usage
         if (config.privateKey) {
             authOptions = `-i ${config.privateKey}`;
         }
+        // Add port if given (scp port -P)
+        if (config.port) {
+            portOptions = `-P ${config.port}`;
+        }
         // SCP command format for upload/download
         if (action === 'upload') {
-            return `scp ${authOptions} -r "${source}" ${userHost}:${destination}`;
+            return `scp ${portOptions} ${authOptions} -r "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `scp ${authOptions} -r ${userHost}:${source} "${destination}"`;
+            return `scp ${portOptions} ${authOptions} -r ${userHost}:${source} "${destination}"`;
         }
     }
 }
@@ -255,6 +270,7 @@ function buildScpCommand(config, source, userHost, destination, action) {
 
 function buildMkdirCommand(config, remoteDir) {
     let authOptions = '';
+    let portOptions = '';
 
     // Determine if using PuTTY tools (Windows) or OpenSSH tools (Linux/macOS)
     if (config.usePuttyTools) {
@@ -262,15 +278,23 @@ function buildMkdirCommand(config, remoteDir) {
         if (config.privateKey) {
             authOptions = `-i "${config.privateKey}"`;
         }
+        // Add port if given (plink port -P)
+        if (config.port) {
+            portOptions = `-P ${config.port}`;
+        }
         // Plink command for directory creation
-        return `"${config.puttyPath}\\plink.exe" ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
+        return `"${config.puttyPath}\\plink.exe" ${portOptions} ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
     } else {
         // For OpenSSH tools, standard private key usage
         if (config.privateKey) {
             authOptions = `-i ${config.privateKey}`;
         }
+        // Add port if given (ssh port -p)
+        if (config.port) {
+            portOptions = `-p ${config.port}`;
+        }
         // SSH command for directory creation
-        return `ssh  ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
+        return `ssh ${portOptions} ${authOptions} ${config.username}@${config.host} "mkdir -p ${remoteDir}"`;
     }
 }
 

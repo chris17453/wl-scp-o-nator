@@ -1,5 +1,10 @@
 # Change Log
 
+## [Version 0.0.6]
+
+- (RewsterUK) Added -P {port} to pscp and plink argument, for hosts not using the default of 22.  
+- (RewsterUK) Added -scp to pscp (putty) for windows if puttyForceScp set, tries and fails to connect to sftp on device without sftp installed.  
+
 ## [Version 0.0.5]
 
 - Fixed Bug: Asysnc error
