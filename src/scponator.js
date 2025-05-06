@@ -12,8 +12,13 @@ const outputChannel = vscode.window.createOutputChannel('File Transfer Log');
 function activate(context) {
     outputChannel.appendLine('Activating extension...');
     let uploadCommand = vscode.commands.registerCommand('scponator.upload', function (uri) {
-        startNewSession();
-        handleFileTransfer('upload', uri, endSession);
+        if (fs.existsSync(uri.fsPath) && fs.lstatSync(uri.fsPath).isDirectory()) {
+            startNewSession();
+            handleDirectoryTransfer('upload', uri, endSession);        
+        } else {
+            startNewSession();
+            handleFileTransfer('upload', uri, endSession);
+        }
     });
 
     let downloadCommand = vscode.commands.registerCommand('scponator.download', function (uri) {
@@ -98,6 +103,32 @@ function handleFileTransfer(action, uri, callback) {
         vscode.window.showErrorMessage(`Configuration error: ${error.message}`);
         outputChannel.appendLine(`Configuration error: ${error.message}`);
         callback();
+    }
+}
+
+async function handleDirectoryTransfer(action, uri) {
+    outputChannel.appendLine(`Handling directory transfer for action: ${action}`);
+    try {
+        const config = getConfig(null); // Pass null to get config from workspace root
+        const remotePath = getRemotePath(config, uri);
+        const userHost = `${config.username}@${config.host}`;
+        const ignorePatterns = config.ignore || [];
+      
+        await traverseDirectory(uri.fsPath, async (localPath) => {
+            const relativePath = path.relative(uri.fsPath, localPath);
+            const remoteFilePath = path.join(remotePath, relativePath).replace(/\\/g, '/');
+          
+            if (action === 'upload') {
+                 await uploadFile(config, localPath, remoteFilePath, userHost);
+            } else if (action === 'download') {
+                await downloadFile(config, localPath, remoteFilePath, userHost);
+            }
+        }, ignorePatterns);
+
+        endSession();
+    } catch (error) {
+        vscode.window.showErrorMessage(`Configuration error: ${error.message}`);
+        outputChannel.appendLine(`Configuration error: ${error.message}`);
     }
 }
 

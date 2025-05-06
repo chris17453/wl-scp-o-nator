@@ -94,7 +94,7 @@
     "submenus": [
       {
         "id": "scponator.singleSubmenu",
-        "label": "SCP-O-NATOR Single"
+        "label": "SCP-O-NATOR File/Directory"
       },
       {
         "id": "scponator.projectSubMenu",
