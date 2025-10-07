@@ -1,10 +1,12 @@
 {
     "host": "10.90.0.45",
     "username": "root",
+    "port": 22,
     "remoteDirectory": "/web/test/",
     "usePuttyTools": false,
     "puttyPath": "",
     "privateKey": "/home/nd/.ssh/nd.key",
+    "forceScpProtocol": false,
     "ignore": [
       "node_modules",
       ".git"

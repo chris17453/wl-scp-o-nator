@@ -2,7 +2,7 @@
   "name": "wl-scp-o-nator",
   "displayName": "SCP-O-Nator",
   "description": "A simple file transfer for projects to and from servers suporting scp (ssh file transfer).",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.7.0"
   },
@@ -17,10 +17,17 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:scponator.upload",
-    "onCommand:scponator.download",
     "onCommand:scponator.uploadProject",
-    "onCommand:scponator.downloadProject"
+    "onCommand:scponator.downloadProject",
+    "onCommand:scponator.uploadDirectory",
+    "onCommand:scponator.downloadDirectory",
+    "onCommand:scponator.uploadSelected",
+    "onCommand:scponator.downloadSelected",
+    "onCommand:scponator.configure",
+    "onCommand:scponator.testConnection",
+    "onCommand:scponator.retryFailed",
+    "onCommand:scponator.compareFiles",
+    "onCommand:scponator.syncDirectory"
   ],
   "repository": {
     "type": "git",
@@ -30,12 +37,40 @@
   "contributes": {
     "commands": [
       {
-        "command": "scponator.upload",
-        "title": "Upload "
+        "command": "scponator.configure",
+        "title": "SCP-O-Nator: Setup Configuration"
       },
       {
-        "command": "scponator.download",
-        "title": "Download"
+        "command": "scponator.testConnection",
+        "title": "SCP-O-Nator: Test Connection"
+      },
+      {
+        "command": "scponator.uploadDirectory",
+        "title": "Upload Directory"
+      },
+      {
+        "command": "scponator.downloadDirectory",
+        "title": "Download Directory"
+      },
+      {
+        "command": "scponator.uploadSelected",
+        "title": "Upload Selected"
+      },
+      {
+        "command": "scponator.downloadSelected",
+        "title": "Download Selected"
+      },
+      {
+        "command": "scponator.retryFailed",
+        "title": "Retry Failed Transfers"
+      },
+      {
+        "command": "scponator.compareFiles",
+        "title": "Compare Local vs Remote"
+      },
+      {
+        "command": "scponator.syncDirectory",
+        "title": "Sync Directory"
       },
       {
         "command": "scponator.uploadProject",
@@ -49,12 +84,12 @@
     ],
     "keybindings": [
       {
-        "command": "scponator.upload",
+        "command": "scponator.uploadSelected",
         "key": "ctrl+shift+s",
         "when": "editorTextFocus"
       },
       {
-        "command": "scponator.download",
+        "command": "scponator.downloadSelected",
         "key": "ctrl+d",
         "when": "editorTextFocus"
       }
@@ -72,12 +107,35 @@
       ],
       "scponator.singleSubmenu": [
         {
-          "command": "scponator.upload",
-          "group": "wlscponator"
+          "command": "scponator.uploadDirectory",
+          "group": "wlscponator@1",
+          "when": "explorerResourceIsFolder"
         },
         {
-          "command": "scponator.download",
-          "group": "wlscponator"
+          "command": "scponator.downloadDirectory",
+          "group": "wlscponator@1",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "scponator.uploadSelected",
+          "group": "wlscponator@1"
+        },
+        {
+          "command": "scponator.downloadSelected",
+          "group": "wlscponator@1"
+        },
+        {
+          "command": "scponator.compareFiles",
+          "group": "wlscponator@2"
+        },
+        {
+          "command": "scponator.syncDirectory",
+          "group": "wlscponator@2",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "scponator.retryFailed",
+          "group": "wlscponator@3"
         }
       ],
       "scponator.projectSubMenu": [
@@ -94,7 +152,7 @@
     "submenus": [
       {
         "id": "scponator.singleSubmenu",
-        "label": "SCP-O-NATOR Single"
+        "label": "SCP-O-NATOR Files/Directory"
       },
       {
         "id": "scponator.projectSubMenu",
