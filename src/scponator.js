@@ -373,11 +373,14 @@ async function compareLocalVsRemote(uri) {
         const localStats = fs.statSync(localPath);
         const localSize = localStats.size;
         const localMtime = localStats.mtime;
+        // Add port for plink or ssh if specified
+        const portOptionPlink = config.port && config.port !== 22 ? `-P ${config.port}` : '';
+        const portOptionSsh   = config.port && config.port !== 22 ? `-p ${config.port}` : '';
         
         // Get remote file stats using SSH
         const statCommand = config.usePuttyTools 
-            ? `"${config.puttyPath}\\plink.exe" -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`
-            : `ssh -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`;
+            ? `"${config.puttyPath}\\plink.exe" ${portOptionPlink} -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`
+            : `ssh ${portOptionSsh} -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`;
         
         executeCommandWithEnv(statCommand, (err, stdout, stderr) => {
             updateStatusBar();
