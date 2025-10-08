@@ -175,6 +175,16 @@ As a solo developer, your likes and reviews really help with visibility and moti
 - ⭐ **Star the repository** on [GitHub](https://github.com/chris17453/wl-scp-o-nator)
 - 📝 **Leave a review** sharing how it helps your workflow
 
+## Contributors
+
+Special thanks to the following contributors who have helped improve this extension:
+
+### [@RewsterUK](https://github.com/RewsterUK)
+- **Connection Improvements**: Fixed compareLocalVsRemote portOptions for Plink & SSH connections
+- **File Attributes**: Added preserveAttributes feature to maintain original file dates during transfers
+
+*Want to contribute? Check out the [Contributing](#contributing) section below!*
+
 ## Contributing
 
 Contributions are welcome! If you encounter any issues or have feature requests, please open an issue or submit a pull request on the [GitHub repository](https://github.com/chris17453/wl-scp-o-nator).

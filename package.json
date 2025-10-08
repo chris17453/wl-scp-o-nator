@@ -2,7 +2,7 @@
   "name": "wl-scp-o-nator",
   "displayName": "SCP-O-Nator",
   "description": "A simple file transfer for projects to and from servers suporting scp (ssh file transfer).",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "engines": {
     "vscode": "^1.7.0"
   },
