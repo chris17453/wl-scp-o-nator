@@ -1,5 +1,13 @@
 # Change Log
 
+## [Version 0.1.1]
+
+### Bug Fixes
+- **Connection Improvements**: Fixed compareLocalVsRemote portOptions for Plink & SSH connections - *Thanks to [@RewsterUK](https://github.com/RewsterUK)*
+
+### New Features  
+- **File Attributes**: Added preserveAttributes feature to maintain original file dates during transfers - *Thanks to [@RewsterUK](https://github.com/RewsterUK)*
+
 ## [Version 0.1.0] - Major Feature Release
 
 ### 🚀 New Major Features

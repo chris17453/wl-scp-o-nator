@@ -2,7 +2,7 @@
   "name": "wl-scp-o-nator",
   "displayName": "SCP-O-Nator",
   "description": "A simple file transfer for projects to and from servers suporting scp (ssh file transfer).",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.7.0"
   },
@@ -12,6 +12,12 @@
     "email": "chris@watkinslabs.com",
     "url": "https://watkinslabs.com"
   },
+  "contributors": [
+    {
+      "name": "RewsterUK",
+      "url": "https://github.com/RewsterUK"
+    }
+  ],
   "icon": "assets/icon.png",
   "categories": [
     "Other"
