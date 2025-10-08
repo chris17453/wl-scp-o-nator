@@ -238,6 +238,12 @@ async function showConfigurationWizard() {
         );
         const forceScpProtocol = forceScpAnswer === 'Yes';
 
+        const forcePreserveAttributesAnswer = await vscode.window.showInformationMessage(
+            'Preserve Attributes on uploaded/downloaded files? (Enable to preserve time / permissions)',
+            'Yes', 'No'
+        );
+        const preserveAttributes = forcePreserveAttributesAnswer === 'No';
+
         // Create configuration object
         const config = {
             host,
@@ -248,6 +254,7 @@ async function showConfigurationWizard() {
             puttyPath,
             privateKey: privateKeyPath || '',
             forceScpProtocol,
+            preserveAttributes,
             ignore: [
                 'node_modules',
                 '.git',
@@ -366,11 +373,14 @@ async function compareLocalVsRemote(uri) {
         const localStats = fs.statSync(localPath);
         const localSize = localStats.size;
         const localMtime = localStats.mtime;
+        // Add port for plink or ssh if specified
+        const portOptionPlink = config.port && config.port !== 22 ? `-P ${config.port}` : '';
+        const portOptionSsh   = config.port && config.port !== 22 ? `-p ${config.port}` : '';
         
         // Get remote file stats using SSH
         const statCommand = config.usePuttyTools 
-            ? `"${config.puttyPath}\\plink.exe" -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`
-            : `ssh -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`;
+            ? `"${config.puttyPath}\\plink.exe" ${portOptionPlink} -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`
+            : `ssh ${portOptionSsh} -i "${config.privateKey}" ${config.username}@${config.host} "stat -c '%s %Y' ${remotePath}"`;
         
         executeCommandWithEnv(statCommand, (err, stdout, stderr) => {
             updateStatusBar();
@@ -736,12 +746,13 @@ function buildScpCommand(config, source, userHost, destination, action) {
         
         // Add -scp flag for pscp compatibility with older OpenWrt devices
         let scpFlag = config.forceScpProtocol ? '-scp' : '';
-        
+        let pscpOptions = config.preserveAttributes ? '-p' : '';
+
         // PSCP command format for upload/download
         if (action === 'upload') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} "${source}" ${userHost}:${destination}`;
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${pscpOptions} "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${userHost}:${source} "${destination}"`;
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${pscpOptions} ${userHost}:${source} "${destination}"`;
         }
     } else {
         // For OpenSSH tools, use the standard private key usage
@@ -751,12 +762,13 @@ function buildScpCommand(config, source, userHost, destination, action) {
         
         // Add additional SSH options to handle passphrase prompts properly on macOS
         let sshOptions = '-o BatchMode=no -o StrictHostKeyChecking=no';
+        let scpOptions = config.preserveAttributes ? '-p' : '';
         
         // SCP command format for upload/download
         if (action === 'upload') {
-            return `scp ${authOptions} ${portOption} ${sshOptions} -r "${source}" ${userHost}:${destination}`;
+            return `scp ${authOptions} ${portOption} ${sshOptions} ${scpOptions} -r "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `scp ${authOptions} ${portOption} ${sshOptions} -r ${userHost}:${source} "${destination}"`;
+            return `scp ${authOptions} ${portOption} ${sshOptions} ${scpOptions} -r ${userHost}:${source} "${destination}"`;
         }
     }
 }
