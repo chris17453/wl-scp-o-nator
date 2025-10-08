@@ -238,6 +238,12 @@ async function showConfigurationWizard() {
         );
         const forceScpProtocol = forceScpAnswer === 'Yes';
 
+        const forcePreserveAttributesAnswer = await vscode.window.showInformationMessage(
+            'Preserve Attributes on uploaded/downloaded files? (Enable to preserve time / permissions)',
+            'Yes', 'No'
+        );
+        const preserveAttributes = forcePreserveAttributesAnswer === 'No';
+
         // Create configuration object
         const config = {
             host,
@@ -248,6 +254,7 @@ async function showConfigurationWizard() {
             puttyPath,
             privateKey: privateKeyPath || '',
             forceScpProtocol,
+            preserveAttributes,
             ignore: [
                 'node_modules',
                 '.git',
@@ -736,12 +743,13 @@ function buildScpCommand(config, source, userHost, destination, action) {
         
         // Add -scp flag for pscp compatibility with older OpenWrt devices
         let scpFlag = config.forceScpProtocol ? '-scp' : '';
-        
+        let pscpOptions = config.preserveAttributes ? '-p' : '';
+
         // PSCP command format for upload/download
         if (action === 'upload') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} "${source}" ${userHost}:${destination}`;
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${pscpOptions} "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${userHost}:${source} "${destination}"`;
+            return `"${config.puttyPath}\\pscp.exe" ${authOptions} ${portOption} ${scpFlag} ${pscpOptions} ${userHost}:${source} "${destination}"`;
         }
     } else {
         // For OpenSSH tools, use the standard private key usage
@@ -751,12 +759,13 @@ function buildScpCommand(config, source, userHost, destination, action) {
         
         // Add additional SSH options to handle passphrase prompts properly on macOS
         let sshOptions = '-o BatchMode=no -o StrictHostKeyChecking=no';
+        let scpOptions = config.preserveAttributes ? '-p' : '';
         
         // SCP command format for upload/download
         if (action === 'upload') {
-            return `scp ${authOptions} ${portOption} ${sshOptions} -r "${source}" ${userHost}:${destination}`;
+            return `scp ${authOptions} ${portOption} ${sshOptions} ${scpOptions} -r "${source}" ${userHost}:${destination}`;
         } else if (action === 'download') {
-            return `scp ${authOptions} ${portOption} ${sshOptions} -r ${userHost}:${source} "${destination}"`;
+            return `scp ${authOptions} ${portOption} ${sshOptions} ${scpOptions} -r ${userHost}:${source} "${destination}"`;
         }
     }
 }
