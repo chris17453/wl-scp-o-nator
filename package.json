@@ -33,7 +33,8 @@
     "onCommand:scponator.testConnection",
     "onCommand:scponator.retryFailed",
     "onCommand:scponator.compareFiles",
-    "onCommand:scponator.syncDirectory"
+    "onCommand:scponator.syncDirectory",
+    "onCommand:scponator.showFileDiff"
   ],
   "repository": {
     "type": "git",
@@ -73,6 +74,10 @@
       {
         "command": "scponator.compareFiles",
         "title": "Compare Local vs Remote"
+      },
+      {
+        "command": "scponator.showFileDiff",
+        "title": "Show Diff Remote vs Local"
       },
       {
         "command": "scponator.syncDirectory",
@@ -133,6 +138,11 @@
         {
           "command": "scponator.compareFiles",
           "group": "wlscponator@2"
+        },
+        {
+          "command": "scponator.showFileDiff",
+          "group": "wlscponator@2",
+          "when": "resourceScheme == file && explorerResourceIsFolder == false && listMultiSelection == false"
         },
         {
           "command": "scponator.syncDirectory",

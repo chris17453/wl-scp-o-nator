@@ -77,6 +77,7 @@ Create a file named `.scpconfig.json` and add the following content:
   "puttyPath": "C:\\path\\to\\putty\\directory", // Only for Windows users
   "privateKey": "C:\\path\\to\\private\\key", // Path to your private key file (either OpenSSH or PuTTY format)
   "forceScpProtocol": false, // Set to true for compatibility with older devices like OpenWrt
+  "preserveAttributes": false, // Set to true to maintain original file dates during transfers
   "ignore": [
     "node_modules",
     ".git",
@@ -154,6 +155,7 @@ To download the corresponding remote file to your local directory, press `Ctrl+D
 - `usePuttyTools`: Set to `true` for Windows users with PuTTY tools
 - `puttyPath`: Path to PuTTY tools directory (Windows only)
 - `forceScpProtocol`: Set to `true` to force SCP protocol for older devices
+- `preserveAttributes`: Set to `true` to maintain original file dates during transfers
 - `ignore`: Array of patterns to ignore during project transfers
 
 ## Troubleshooting

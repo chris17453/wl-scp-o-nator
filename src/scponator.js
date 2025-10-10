@@ -13,6 +13,7 @@ let isTransferring = false;
 let currentTransferCount = 0;
 let totalTransferCount = 0;
 const outputChannel = vscode.window.createOutputChannel('File Transfer Log');
+const remoteReadOnlyContent = new Map(); // for showFileDiff virtual read only file
 
 function activate(context) {
     outputChannel.appendLine('Activating extension...');
@@ -39,6 +40,11 @@ function activate(context) {
     // Compare files command
     let compareFilesCommand = vscode.commands.registerCommand('scponator.compareFiles', function (uri) {
         compareLocalVsRemote(uri);
+    });
+
+    // Show file diff command
+    let diffFileCommand = vscode.commands.registerCommand('scponator.showFileDiff', function (uri) {
+        showFileDiffRemoteVsLocal(uri);
     });
 
     // Sync directory command
@@ -84,7 +90,16 @@ function activate(context) {
         });
     });
 
-
+    // this section is for showFileDiff function, the remote file is loaded into memory to make it read only in pane
+    const providerDisposable = vscode.workspace.registerTextDocumentContentProvider(
+            'REMOTEREADONLY',
+            {
+                provideTextDocumentContent(uri) {
+                return remoteReadOnlyContent.get(uri.toString()) ?? 'Unable to load remote content.';
+            }
+        }
+    );
+    context.subscriptions.push(providerDisposable);
 
     context.subscriptions.push(configureCommand);
     context.subscriptions.push(testConnectionCommand);
@@ -97,6 +112,7 @@ function activate(context) {
     context.subscriptions.push(downloadSelectedCommand);
     context.subscriptions.push(uploadProjectCommand);
     context.subscriptions.push(downloadProjectCommand);
+    context.subscriptions.push(showFileDiffCommand);
 
     outputChannel.appendLine('Extension activated successfully.');
 }
@@ -427,6 +443,74 @@ async function compareLocalVsRemote(uri) {
     } catch (error) {
         updateStatusBar();
         vscode.window.showErrorMessage(`Comparison failed: ${error.message}`);
+    }
+}
+
+async function showFileDiffRemoteVsLocal(uri) {
+    try {
+        const config = getConfig(uri);
+        const localPath = uri.fsPath;
+        const remotePath = getRemotePath(config, uri);
+        const userHost = `${config.username}@${config.host}`;
+
+        updateStatusBar('Fetching remote file for diff ...');
+
+        const baseName = path.basename(localPath);
+        const tmpRootFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'scponator-diff-'));
+        const tmpRemotePath = path.join(tmpRootFolder, baseName);
+        
+        const scpCommand = buildScpCommand(config, remotePath, userHost, tmpRemotePath, 'download');
+        outputChannel.appendLine(`Downloading remote copy for diff: ${remotePath}`);
+ 
+        executeCommandWithEnv(scpCommand, async (err, _stdout, stderr) => {
+            updateStatusBar();
+            if (err) {
+                vscode.window.showErrorMessage(`Could not download remote file for diff: ${stderr}`);
+                outputChannel.appendLine(`Download error: ${stderr}`);
+                outputChannel.appendLine(`Source: ${remotePath}`);
+                outputChannel.appendLine(`Destination: ${tmpRemotePath}`);
+                return;
+            }
+
+            try {
+                 // read remote content as virtualUri (read-only)
+                const remoteText = fs.readFileSync(tmpRemotePath, 'utf8');
+                const virtualUri = vscode.Uri.parse(
+                    `REMOTEREADONLY:/${baseName} (remote)?t=${Date.now()}`
+                );
+                remoteReadOnlyContent.set(virtualUri.toString(), remoteText);
+
+                const left = virtualUri;
+                const right = vscode.Uri.file(localPath); // local
+                const title = `${baseName} - remote vs local`;
+                
+                // display same order as left and right variable (so the local filename appears in the diff editor tab)
+                // and the local file appears in the right hand pane
+                await vscode.commands.executeCommand('vscode.diff', left, right, title);
+                outputChannel.appendLine(`Opened diff: ${tmpRemotePath} (remote) <> ${localPath} (local)`);
+            
+                // try to remove temp file and folder now (content is cached in memory)
+                try { fs.unlinkSync(tmpRemotePath); } catch {}
+                try { fs.rmdirSync(tmpRootFolder); } catch {}
+
+                // remove cached content when the virtual doc closes
+                const disposer = vscode.workspace.onDidCloseTextDocument(doc => {
+                    if (doc.uri.toString() === virtualUri.toString()) {
+                        remoteReadOnlyContent.delete(virtualUri.toString());
+                        disposer.dispose();
+                    }
+                });
+
+            } catch (openErr) {
+                vscode.window.showErrorMessage(`Failed to open diff view: ${openErr.message}`);
+                // try to remove temp file and folder if failed
+                try { fs.unlinkSync(tmpRemotePath); } catch {}
+                try { fs.rmdirSync(tmpRootFolder); } catch {}
+            }
+        });
+    } catch (e) {
+        updateStatusBar();
+        vscode.window.showErrorMessage(`Diff failed: ${e.message}`);
     }
 }
 
